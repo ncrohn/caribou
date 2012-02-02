@@ -1,9 +1,12 @@
 
-var http = require('http');
-var winston = require('winston');
+var http = require('http'),
+    winston = require('winston'),
+    spawn = require('child_process').spawn,
+    path = require('path'),
+    fs = require('fs'),
 
-var deployDir = __dirname + "/../../test";
-
+    // Config
+    deployDir = path.normalize(__dirname + "/../../test");
 
 http.createServer(
   function (req, res) {
@@ -38,10 +41,44 @@ function processPush(data) {
   } else {
     winston.info(data.repository.name + " " + data.ref + " was updated.");
     winston.info("Starting deploy process of updated artifact.");
+    deploy(data);
   }
 
 }
 
+function deploy(data) {
+
+  var repoDir = path.normalize(deployDir + "/" + data.repository.name),
+      git;
+
+  fs.stat(repoDir,
+    function(err, stat) {
+      if(stat) {
+        winston.info("git pull " + repoDir + " " + data.ref);
+        git = spawn('git', ['pull', repoDir, data.ref]);
+      } else {
+        winston.info("git clone " + data.repository.url + " " + repoDir);
+        git = spawn('git', ['clone', data.repository.url, repoDir]);
+      }
+
+      git.stdout.on('data',
+        function(feed) {
+          winston.info(feed);
+        });
+
+      git.stderr.on('data',
+        function(data) {
+          winston.error(data);
+        });
+
+      git.on('exit',
+        function(code) {
+          winston.info("Git clone finished with exit code: " + code);
+        });
+
+    });
+
+}
 
 function convert(data) {
   var obj = {};

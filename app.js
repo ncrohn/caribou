@@ -6,7 +6,7 @@ var http = require('http'),
     fs = require('fs'),
 
     // Config
-    deployDir = path.normalize(__dirname + "/../../test");
+    deployDir = path.normalize(__dirname + '/deploy');
 
 http.createServer(
   function (req, res) {
@@ -55,7 +55,7 @@ function deploy(data) {
     function(err, stat) {
       if(stat) {
         winston.info("git pull " + repoDir + " " + data.ref);
-        gitProcess = spawn('node', ['git-process', 'pull', repoDir, data.ref]);
+        gitProcess = spawn('node', ['git-process', 'fetch', repoDir, data.ref]);
       } else {
         winston.info("git clone " + data.repository.url + " " + repoDir);
         gitProcess = spawn('git', ['clone', data.repository.url, repoDir]);

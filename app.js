@@ -55,7 +55,7 @@ function deploy(data) {
     function(err, stat) {
       if(stat) {
         winston.info("git pull " + repoDir + " " + data.ref);
-        gitProcess = spawn('node', ['git-process', 'fetch', repoDir, data.ref]);
+        gitProcess = spawn('git', ['--git-dir='+repoDir+'/.git', 'fetch']);
       } else {
         winston.info("git clone " + data.repository.url + " " + repoDir);
         gitProcess = spawn('git', ['clone', data.repository.url, repoDir]);

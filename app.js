@@ -6,7 +6,14 @@ http.createServer(
     req.setEncoding("UTF8");
 
     req.on('data', function(chunk) {
-             console.log(chunk.toString('utf8'));
+             if(req.headers['x-github-event'] === 'push') {
+               var rawData = decodeURIComponent(chunk.toString('utf8'));
+               var dataObject = convert(rawData);
+               var jsonData = JSON.parse(dataObject['payload']);
+
+               console.log(jsonData);
+
+             }
            });
 
     req.on('end', function() {
@@ -15,3 +22,15 @@ http.createServer(
 
   }).listen(3000, "127.0.0.1");
 console.log('Server running at http://127.0.0.1:3000/');
+
+function convert(data) {
+  var obj = {};
+
+  data = data.split("=");
+
+  for(var x = 0; x < data.length;x+=2) {
+    obj[data[x]] = data[x+1];
+  }
+
+  return obj;
+}

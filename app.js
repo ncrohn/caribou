@@ -49,29 +49,29 @@ function processPush(data) {
 function deploy(data) {
 
   var repoDir = path.normalize(deployDir + "/" + data.repository.name),
-      git;
+      gitProcess;
 
   fs.stat(repoDir,
     function(err, stat) {
       if(stat) {
         winston.info("git pull " + repoDir + " " + data.ref);
-        git = spawn('git', ['pull', repoDir, data.ref]);
+        gitProcess = spawn('node', ['git-process', 'pull', repoDir, data.ref]);
       } else {
         winston.info("git clone " + data.repository.url + " " + repoDir);
-        git = spawn('git', ['clone', data.repository.url, repoDir]);
+        gitProcess = spawn('git', ['clone', data.repository.url, repoDir]);
       }
 
-      git.stdout.on('data',
+      gitProcess.stdout.on('data',
         function(feed) {
           winston.info(feed);
         });
 
-      git.stderr.on('data',
+      gitProcess.stderr.on('data',
         function(data) {
           winston.error(data);
         });
 
-      git.on('exit',
+      gitProcess.on('exit',
         function(code) {
           winston.info("Git clone finished with exit code: " + code);
         });

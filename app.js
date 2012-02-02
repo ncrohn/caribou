@@ -1,5 +1,10 @@
 
 var http = require('http');
+var winston = require('winston');
+
+var deployDir = __dirname + "/../../test";
+
+
 http.createServer(
   function (req, res) {
 
@@ -11,8 +16,7 @@ http.createServer(
                var dataObject = convert(rawData);
                var jsonData = JSON.parse(dataObject['payload']);
 
-               console.log(jsonData);
-
+               processPush(jsonData);
              }
            });
 
@@ -21,7 +25,23 @@ http.createServer(
            });
 
   }).listen(3000, "127.0.0.1");
-console.log('Server running at http://127.0.0.1:3000/');
+winston.info('Server running at http://127.0.0.1:3000/');
+
+function processPush(data) {
+
+  if(data.deleted) {
+    winston.info(data.repository.name + " " + data.ref + " was deleted.");
+    winston.info("Starting undeploy process and deploying last known good artifact.");
+  } else if(data.created) {
+    winston.info(data.repository.name + " " + data.ref + " was created.");
+    winston.info("Starting deploy process of new artifact.");
+  } else {
+    winston.info(data.repository.name + " " + data.ref + " was updated.");
+    winston.info("Starting deploy process of updated artifact.");
+  }
+
+}
+
 
 function convert(data) {
   var obj = {};

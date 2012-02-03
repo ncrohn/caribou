@@ -75,6 +75,28 @@ function deploy(data) {
       gitProcess.on('exit',
         function(code) {
           winston.info("Git clone finished with exit code: " + code);
+
+          process.chdir(repoDir);
+          var npm = spawn('npm', ['install']);
+
+          winston.info('Installing dependencies with `npm install`');
+
+          npm.stdout.on('data',
+            function(feed) {
+              winston.info(feed);
+            });
+
+          npm.stderr.on('data',
+            function(feed) {
+              winston.error(feed);
+            });
+
+          npm.on('exit',
+            function(code) {
+              winston.info('npm install process finished with code: ' + code);
+            });
+
+
         });
 
     });

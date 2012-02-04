@@ -1,4 +1,3 @@
-
 var http = require('http'),
     winston = require('winston'),
     spawn = require('child_process').spawn,
@@ -48,7 +47,7 @@ function startServer() {
         });
 
     }).listen(3000, "127.0.0.1");
-  winston.info('Server running at http://127.0.0.1:3000/');
+  winston.info('Caribou running at http://127.0.0.1:3000/');
 
 }
 

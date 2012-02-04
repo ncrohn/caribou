@@ -3,7 +3,9 @@
   "description": "Deployment automation tool",
   "version": "0.0.1",
   "author": "Nick Crohn <ncrohn@me.com> (http://www.github.com/ncrohn)",
-  "main": "./caribou",
+  "bin": {
+    "caribou": "./caribou.js"
+  },
   "repository": {
     "type": "git",
     "url": "http://github.com/ncrohn/caribou"

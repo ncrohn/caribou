@@ -2,33 +2,55 @@
 var http = require('http'),
     winston = require('winston'),
     spawn = require('child_process').spawn,
+    exec = require('child_process').exec,
     path = require('path'),
     fs = require('fs'),
 
     // Config
-    deployDir = path.normalize(__dirname + '/deploy');
+    deployDir = path.normalize(__dirname + '/deploy'),
+    queue = {};
 
-http.createServer(
-  function (req, res) {
 
-    req.setEncoding("UTF8");
+fs.stat(deployDir,
+  function(err, stat) {
+    if(err && !err.toString().match(/ENOENT/)) throw err;
+    if(stat) {
+      startServer();
+    } else {
+      fs.mkdir(deployDir,
+        function(err) {
+          if(err) throw err;
+          startServer();
+        });
+    }
+  });
 
-    req.on('data', function(chunk) {
-             if(req.headers['x-github-event'] === 'push') {
-               var rawData = decodeURIComponent(chunk.toString('utf8'));
-               var dataObject = convert(rawData);
-               var jsonData = JSON.parse(dataObject['payload']);
+function startServer() {
+  http.createServer(
+    function (req, res) {
 
-               processPush(jsonData);
-             }
-           });
+      req.setEncoding("UTF8");
 
-    req.on('end', function() {
-             res.end();
-           });
+      req.on('data',
+        function(chunk) {
+          if(req.headers['x-github-event'] === 'push') {
+            var rawData = decodeURIComponent(chunk.toString('utf8')),
+                dataObject = convert(rawData),
+                jsonData = JSON.parse(dataObject['payload']);
 
-  }).listen(3000, "127.0.0.1");
-winston.info('Server running at http://127.0.0.1:3000/');
+            processPush(jsonData);
+          }
+        });
+
+      req.on('end',
+        function() {
+          res.end();
+        });
+
+    }).listen(3000, "127.0.0.1");
+  winston.info('Server running at http://127.0.0.1:3000/');
+
+}
 
 function processPush(data) {
 
@@ -49,7 +71,13 @@ function processPush(data) {
 function deploy(data) {
 
   var repoDir = path.normalize(deployDir + "/" + data.repository.name),
-      gitProcess;
+      gitProcess, repoUrl = data.repository.url,
+      selfUpdate = false;
+
+  if(data.repository.name === 'caribou') {
+    // Hey that's us - let's go ahead and self update
+    repoDir = path.normalize(__dirname);
+  }
 
   fs.stat(repoDir,
     function(err, stat) {
@@ -58,8 +86,14 @@ function deploy(data) {
         process.chdir(repoDir);
         gitProcess = spawn('git', ['pull']);
       } else {
-        winston.info("git clone " + data.repository.url + " " + repoDir);
-        gitProcess = spawn('git', ['clone', data.repository.url, repoDir]);
+
+        if(data.repository.private) {
+          // We need to add in the username and password if a private
+          repoUrl = repoUrl.replace('https://github.com/', 'git@github.com:');
+        }
+
+        winston.info("git clone " + repoUrl + " " + repoDir);
+        gitProcess = spawn('git', ['clone', repoUrl, repoDir]);
       }
 
       gitProcess.stdout.on('data',

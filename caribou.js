@@ -1,3 +1,9 @@
+/**
+ *
+ * MIT License copyright (c) 2012 Nick Crohn
+ *
+ */
+
 var http = require('http'),
     winston = require('winston'),
     spawn = require('child_process').spawn,

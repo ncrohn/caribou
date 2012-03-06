@@ -52,8 +52,8 @@ function startServer() {
           res.end();
         });
 
-    }).listen(3000, "127.0.0.1");
-  winston.info('Caribou is totally running at http://127.0.0.1:3000/');
+    }).listen(4050, "127.0.0.1");
+  winston.info('Caribou is nibling the hoops at http://127.0.0.1:4050/');
 
 }
 

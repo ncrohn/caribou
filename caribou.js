@@ -36,23 +36,26 @@ function startServer() {
 
       req.setEncoding("UTF8");
 
+      var rawData = [];
+
       req.on('data',
         function(chunk) {
           if(req.headers['x-github-event'] === 'push') {
-            var rawData = decodeURIComponent(chunk.toString('utf8')),
-                dataObject = convert(rawData),
-                jsonData = JSON.parse(dataObject['payload']);
+            rawData.push(decodeURIComponent(chunk.toString('utf8'));
 
-            processPush(jsonData);
           }
         });
 
       req.on('end',
         function() {
+          var dataObject = convert(rawData.join()),
+              jsonData = JSON.parse(dataObject['payload']);
+
+          processPush(jsonData);
           res.end();
         });
 
-    }).listen(4050, "127.0.0.1");
+    }).listen(4050);
   winston.info('Caribou is nibling the hoops at http://127.0.0.1:4050/');
 
 }

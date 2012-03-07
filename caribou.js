@@ -41,14 +41,13 @@ function startServer() {
       req.on('data',
         function(chunk) {
           if(req.headers['x-github-event'] === 'push') {
-            rawData.push(decodeURIComponent(chunk.toString('utf8'));
-
+            rawData.push(chunk.toString('utf8'));
           }
         });
 
       req.on('end',
         function() {
-          var dataObject = convert(rawData.join()),
+          var dataObject = convert(decodeURIComponent(rawData.join())),
               jsonData = JSON.parse(dataObject['payload']);
 
           processPush(jsonData);

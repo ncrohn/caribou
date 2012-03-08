@@ -49,10 +49,7 @@ function startServer() {
         function() {
           if(req.headers['x-github-event'] === 'push') {
 
-          winston.info('rawData.length: '+rawData.length);
-          winston.info('rawData'+ rawData.join());
-
-          var dataObject = convert(decodeURIComponent(rawData.join())),
+          var dataObject = convert(decodeURIComponent(rawData.join(""))),
               jsonData = JSON.parse(dataObject['payload']);
 
             processPush(jsonData);
